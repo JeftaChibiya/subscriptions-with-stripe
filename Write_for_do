@@ -1,0 +1,225 @@
+Example Articles:
+https://www.digitalocean.com/community/tutorials/how-to-containerize-a-laravel-application-for-development-with-docker-compose-on-ubuntu-18-04#conclusion
+
+https://www.digitalocean.com/community/tutorials/easier-datetime-in-laravel-and-php-with-carbon#relative-time
+
+https://laravel-news.com/your-first-laravel-application
+
+// monthly , yearly, lifetime
+if (!$user->subscribedToPlan(['prod_JCR5gVkTsyGsky', 'prod_JCR6ww0vBt0b2E'], 'prod_JCRAIdTWJ0BXda')) {
+If your application only offers a single subscription, you might call this default or primary. 
+The second argument is the specific plan the user is subscribing to. 
+This value should correspond to the plan's price identifier in Stripe.    
+    $request->user()->newSubscription(
+        'default', 'price_premium'
+    )->create($request->paymentMethodId);    
+}
+
+// App\Http\Middleware\VerifyCsrfToken - Laravel's CSRF protection
+protected $except = [
+    'stripe/*',
+];
+
+Cashier => subscription cancellations for failed charges + common Stripe webhook events. 
+
+Your controller's method names should be prefixed with handle and the "camel case" name of the webhook you wish to handle. 
+e.g. invoice.payment_succeeded webhook => handleInvoicePaymentSucceeded method to the controller:
+
+// define a route to your Cashier webhook controller within your application's routes/web.php file. 
+// This will overwrite the default route registered by Cashier's service provider
+use App\Http\Controllers\WebhookController;
+
+Route::post(
+    '/stripe/webhook',
+    [WebhookController::class, 'handleWebhook']
+);
+
+TALL (Tailwind, Alpine, Livewire, Laravel) stack
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|confirmed|min:8',
+            // stripe
+            'stripeToken' => 'required',
+            'plan' => 'required',
+        ]);
+
+        $this->subscribed(
+            $user,
+            $paymentMethodId = $request->stripeToken,
+            $plan = $request->plan
+        );
+
+@if ($errors->any())
+    <div class="field mt-6">
+        @foreach ($errors->all() as $error)
+@if ($errors->{ $bag ?? 'default' }->any())
+    <ul class="field mt-6 list-reset">
+        @foreach ($errors->{ $bag ?? 'default' }->all() as $error)
+            <li class="text-sm text-red">{{ $error }}</li>
+        @endforeach
+    </div>
+    </ul>
+@endif                
+
+Thank you for your purchase. Below is the subscription information.
+
+You received this email after an order made through Stripe - an authorized payments platform.
+
+https://stripe.com/docs/billing/subscriptions/fixed-price
+
+https://gist.github.com/Braunson/8b18b7fc7efd0890136ce5e46452ec72
+
+
+        // create a Local billing plan that matches one in Stripe
+        $stripeBillingPlans = $stripe->products->all();
+        foreach ($stripeBillingPlans as $stripeBillingPlan) {
+            $savedPlan = LocalBillingPlan::create([
+                'plan_id' => $stripeBillingPlan->id,
+                'name' => $stripeBillingPlan->name,
+                'desc' => $stripeBillingPlan->description,
+            ]);
+        }
+        // create local prices
+        $stripeBillingPrices = $stripe->prices->all();
+        foreach ($stripeBillingPrices as $stripeBillingPrice) {
+            $savedPrice = LocalBillingPrice::create([
+                'price_id' => $stripeBillingPrice->id,
+                'product' => $stripeBillingPrice->product,
+                'unit_amount' => $stripeBillingPrice->unit_amount
+            ]);
+
+            $savedPrice->plans()->attach($stripeBillingPlan->plan_id);
+        }
+
+        
+        $downloadInvoice = $user->downloadInvoice($invoiceId, [
+            'vendor' => 'Your Company',
+            'product' => 'Your Product',
+        ], $yearMonth . $invoiceId);    
+        
+        $downloadInvoice = $user->downloadInvoice($invoiceId, [
+            'vendor' => 'BreezeApp',
+            'product' => $plan->name . 'Subscription',
+        ], $yearMonth . $invoiceId);
+
+        $stripe = new StripeClient(config('services.stripe.secret'));
+
+        $year = Carbon::now()->year;
+        $month = Carbon::now()->month;
+        $day = Carbon::now()->day;
+
+        $todaysTimestamp = Carbon::create($year . $month . $day)->timestamp;
+
+        $downloadInvoice = $stripe->invoices->all(['limit' => 1, 'created' => $todaysTimestamp, 'status' => 'paid']);                    
+
+                // await stripe.createToken(card).then(function(result) {
+                //     if (result.error) {                                        
+                //         // Inform the customer that there was an error.
+                //         self.cardErrorOnSubmit = result.error.message;                
+                //     } else {                   
+                //         // save paymentMethodId to var above
+                //         self.form.paymethodMethodId = result.token.id;                      
+                //     }
+                // });
+
+                let self = this;    
+                
+                await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                })
+                .then((result) => {
+                    if (result.error) {
+                        displayError(result);
+                    } 
+                    else {
+                        self.form.paymentMethodId = result.paymentMethod.id
+                    }
+                }); 
+
+
+            setUpStripe(){
+                // Custom Styling
+                const style = {
+                    base: {
+                        color: 'black',
+                        fontSize: '16px',
+                        fontWeight: '400',
+                        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                        fontSmoothing: 'antialiased',              
+                        '::placeholder': {
+                            color: '#999999'
+                        }
+                    },
+                    invalid: {
+                        color: '#E53A40',
+                        iconColor: '#fa755a'
+                    }
+                };            
+
+                // instantiate card element
+                cardElement = elements.create('card', {style: style, hidePostalCode: true});      
+            
+                // mount it to the 'card' variable above
+                cardElement.mount(this.$refs.card);        
+                
+                // real-time validation errors on the card element.
+                this.$refs.card.on('change', function(event) {                
+                    var self = this;
+                    if (event.complete) {
+                        self.stripeToken();
+                        self.cardErrorBeforeSubmit = '';                        
+                    } 
+                    else if(event.error) {
+                        self.cardErrorBeforeSubmit = event.error.message;
+                    }
+                }); 
+            }                
+            
+<style>
+    *,
+    *::before,
+    *::after {
+    box-sizing: border-box;
+    }
+    .card-input{
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding-top: 0.5rem;
+        padding-right: 0.75rem;
+        padding-bottom: 0.5rem;
+        padding-left: 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid rgb(209, 206, 206);        
+    }
+    select {
+        appearance: none;
+        background-color: transparent;
+        border: 1px solid rgb(209, 206, 206);
+        padding-top: 0.5rem 0.75rem 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+        width: 100%;
+        font-family: inherit;
+        font-size: inherit;
+        cursor: inherit;
+        line-height: inherit;
+    }    
+</style>                            
+
+
+// replace the current state when new data becomes available
+// initialiseStore(state) {
+//     // Check if the ID exists
+//     if (localStorage.getItem('store')) {
+//         // Replace the state object with the stored item
+//         this.replaceState(
+//             Object.assign(state, JSON.parse(localStorage.getItem('store')))
+//         );
+//     }
+// },
+
+// console.log(preSubmitErrors, prevPreSubmitErrors);
+
+4242 4242 4242 4242
